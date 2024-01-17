@@ -1,0 +1,93 @@
+
+//+------------------------------------------------------------------+
+//|                                                     Algo v3 EA Robot |
+//|                                             forexroboteasy.com |
+//|                                      Developed by Forex Robot Easy Team |
+//+------------------------------------------------------------------+
+#property copyright 'forexroboteasy.com'
+#property link      'forexroboteasy.com'
+
+//--- Input parameters
+input double RiskPercentage = 0.5; // Risk percentage per trade
+input double MaxDailyDrawdown = 2.0; // Maximum daily drawdown percentage
+
+//--- Global variables
+double AccountBalance;
+double MaxDailyProfit;
+double MaxDailyLoss;
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   //--- Initialize variables
+   AccountBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+   MaxDailyProfit = AccountBalance * 0.1; // Maximum daily profit percentage
+   MaxDailyLoss = AccountBalance * MaxDailyDrawdown / 100; // Maximum daily loss amount
+   
+   //--- Set trading pairs
+   SymbolSelect('XAUUSD', true); // Enable trading on XAUUSD (gold)
+   SymbolSelect('NAS100', true); // Enable trading on NAS100
+   SymbolSelect('US30', true); // Enable trading on US30
+   
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   //--- Reset trading pairs
+   SymbolSelect('XAUUSD', false); // Disable trading on XAUUSD (gold)
+   SymbolSelect('NAS100', false); // Disable trading on NAS100
+   SymbolSelect('US30', false); // Disable trading on US30
+}
+
+//+------------------------------------------------------------------+
+//| Expert start function                                            |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   //--- Check if daily profit target has been reached
+   if (AccountProfit() >= MaxDailyProfit)
+   {
+      //--- Close all open positions
+      for (int i = OrdersTotal() - 1; i >= 0; i--)
+      {
+         if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+         {
+            if (OrderSymbol() == 'XAUUSD' || OrderSymbol() == 'NAS100' || OrderSymbol() == 'US30')
+               OrderClose(OrderTicket(), OrderLots(), OrderClosePrice(), 0);
+         }
+      }
+   }
+   
+   //--- Check if daily loss limit has been reached
+   if (AccountLoss() >= MaxDailyLoss)
+   {
+      //--- Close all open positions
+      for (int i = OrdersTotal() - 1; i >= 0; i--)
+      {
+         if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+         {
+            if (OrderSymbol() == 'XAUUSD' || OrderSymbol() == 'NAS100' || OrderSymbol() == 'US30')
+               OrderClose(OrderTicket(), OrderLots(), OrderClosePrice(), 0);
+         }
+      }
+   }
+   
+   //--- Place new trades
+   if (AccountProfit() < MaxDailyProfit && AccountLoss() < MaxDailyLoss)
+   {
+      //--- Place new trades based on the Strategic Smart Move Trading (SMT) strategy
+      //... Implement your trading strategy here
+      
+      //--- Set stop loss and take profit levels
+      //... Implement your risk management strategy here
+      
+      //--- Execute trades
+      //... Implement your trade execution logic here
+   }
+}
